@@ -24,10 +24,16 @@ function submitHandler(e) {
       clearGallery();
       renderSearchFoto(hits);
       $loadMoreBtn.removeAttribute('hidden');
-      if (hits.length < 40) {
+      if (hits.length > 0 && hits.length < 40) {
         $loadMoreBtn.setAttribute('hidden', 'hidden');
         Notiflix.Notify.info(
           "We're sorry, but you've reached the end of search results."
+        );
+      }
+      if (hits.length === 0) {
+        $loadMoreBtn.setAttribute('hidden', 'hidden');
+        Notiflix.Notify.warning(
+          "Sorry, there are no images matching your search query. Please try again."
         );
       }
     })
@@ -61,7 +67,7 @@ function renderSearchFoto(response) {
 }
 
 function loadMorePhoto(e) {
-  getPhotoApi.getPhoto().then(hits => renderSearchFoto(hits));
+  getPhotoApi.getPhoto().then(({ hits }) => renderSearchFoto(hits));
 }
 
 function clearGallery() {
