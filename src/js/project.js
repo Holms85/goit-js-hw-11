@@ -1,4 +1,5 @@
-import axios from 'axios';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 import Notiflix from 'notiflix';
 import GetPhotoApi from './fetchFoto';
 const getPhotoApi = new GetPhotoApi();
@@ -8,7 +9,10 @@ const $Input = document.querySelector('input[name=searchQuery]');
 const $loadMoreBtn = document.querySelector('.btn-show');
 $Form.addEventListener('submit', submitHandler);
 $loadMoreBtn.addEventListener('click', loadMorePhoto);
-
+const lightbox = new SimpleLightbox('.gallery div a', {
+  captionsData: 'alt',
+  captionDelay: 250,
+});
 function submitHandler(e) {
   e.preventDefault();
 
@@ -17,13 +21,14 @@ function submitHandler(e) {
   getPhotoApi
     .getPhoto()
     .then(({ totalHits, hits }) => {
-      // console.log(data);
       if (totalHits > 0) {
         Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`);
       }
       clearGallery();
       renderSearchFoto(hits);
+
       $loadMoreBtn.removeAttribute('hidden');
+      createStyle();
       if (hits.length > 0 && hits.length < 40) {
         $loadMoreBtn.setAttribute('hidden', 'hidden');
         Notiflix.Notify.info(
@@ -33,7 +38,7 @@ function submitHandler(e) {
       if (hits.length === 0) {
         $loadMoreBtn.setAttribute('hidden', 'hidden');
         Notiflix.Notify.warning(
-          "Sorry, there are no images matching your search query. Please try again."
+          'Sorry, there are no images matching your search query. Please try again.'
         );
       }
     })
@@ -45,25 +50,35 @@ function renderSearchFoto(response) {
     .map(
       el =>
         `<div class="photo-card">
-  <img src="${el.webformatURL}" alt="cat" loading="lazy" width=275 height=250/>
+        <a href="${el.largeImageURL}">
+  <img src="${el.webformatURL}" alt="${el.tags}" loading="lazy" width=275 height=250/>
+  </a>
   <div class="info">
     <p class="info-item">
-      <b>Likes</b>
+      <b>Likes ${el.likes}</b>
     </p>
     <p class="info-item">
-      <b>Views</b>
+      <b>Views ${el.views}</b>
     </p>
     <p class="info-item">
-      <b>Comments</b>
+      <b>Comments ${el.comments}</b>
     </p>
     <p class="info-item">
-      <b>Downloads</b>
+      <b>Downloads ${el.downloads}</b>
     </p>
   </div>
 </div>`
     )
     .join('');
   galleryRefs.insertAdjacentHTML('beforeend', markUpList);
+  lightbox.refresh();
+}
+
+function createStyle() {
+  $loadMoreBtn.style.backgroundColor = 'rgba(0, 204, 255, 0.692)';
+  $loadMoreBtn.style.display = 'flex';
+  $loadMoreBtn.style.marginLeft = 'auto';
+  $loadMoreBtn.style.marginRight = 'auto';
 }
 
 function loadMorePhoto(e) {
@@ -73,3 +88,12 @@ function loadMorePhoto(e) {
 function clearGallery() {
   galleryRefs.innerHTML = '';
 }
+
+// const { height: cardHeight } = document
+//   .querySelector(".gallery")
+//   .firstElementChild.getBoundingClientRect();
+
+// window.scrollBy({
+//   top: cardHeight * 2,
+//   behavior: "smooth",
+// });
