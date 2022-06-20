@@ -13,9 +13,11 @@ const lightbox = new SimpleLightbox('.gallery div a', {
   captionsData: 'alt',
   captionDelay: 250,
 });
+hiddenLoadBtn();
 function submitHandler(e) {
   e.preventDefault();
-
+  showLoadBtn();
+  createStyle();
   getPhotoApi.searchValue = e.target.searchQuery.value;
   getPhotoApi.resetPage();
   getPhotoApi
@@ -25,18 +27,21 @@ function submitHandler(e) {
         Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`);
       }
       clearGallery();
-      renderSearchFoto(hits);
+      if (totalHits <= 40 && hits.length > 0) {
+        Notify.success(`Hooray! We found ${hits.length} images.`);
+        hiddenLoadBtn();
+      }
 
-      $loadMoreBtn.removeAttribute('hidden');
-      createStyle();
-      if (hits.length > 0 && hits.length < 40) {
-        $loadMoreBtn.setAttribute('hidden', 'hidden');
+      renderSearchFoto(hits);
+      if (getPhotoApi.page > Math.ceil(totalHits / 40)) {
+        hiddenLoadBtn();
         Notiflix.Notify.info(
           "We're sorry, but you've reached the end of search results."
         );
       }
+
       if (hits.length === 0) {
-        $loadMoreBtn.setAttribute('hidden', 'hidden');
+        hiddenLoadBtn();
         Notiflix.Notify.warning(
           'Sorry, there are no images matching your search query. Please try again.'
         );
@@ -76,17 +81,35 @@ function renderSearchFoto(response) {
 
 function createStyle() {
   $loadMoreBtn.style.backgroundColor = 'rgba(0, 204, 255, 0.692)';
-  $loadMoreBtn.style.display = 'flex';
+  $loadMoreBtn.style.display = 'block';
   $loadMoreBtn.style.marginLeft = 'auto';
   $loadMoreBtn.style.marginRight = 'auto';
 }
 
 function loadMorePhoto(e) {
-  getPhotoApi.getPhoto().then(({ hits }) => renderSearchFoto(hits));
+  getPhotoApi.getPhoto().then(({ hits, totalHits }) => {
+    renderSearchFoto(hits);
+    if (getPhotoApi.page > Math.ceil(totalHits / 40)) {
+      hiddenLoadBtn();
+      Notiflix.Notify.info(
+        "We're sorry, but you've reached the end of search results."
+      );
+    }
+  });
 }
 
 function clearGallery() {
   galleryRefs.innerHTML = '';
+}
+
+function showLoadBtn() {
+  $loadMoreBtn.classList.remove('is-hidden');
+  createStyle();
+}
+
+function hiddenLoadBtn() {
+  $loadMoreBtn.classList.add('is-hidden');
+  $loadMoreBtn.style.display = '';
 }
 
 // const { height: cardHeight } = document

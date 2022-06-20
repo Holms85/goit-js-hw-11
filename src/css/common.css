@@ -38,3 +38,14 @@ img {
   flex-direction: row;
   background-color: rgba(229, 255, 0, 0.753);
 }
+
+button.is-hidden {
+  display: none;
+}
+
+.btn-show {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: rgba(0, 204, 255, 0.692);
+}
